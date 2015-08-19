@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+use Footstones\Plumber\WorkerDaemon;
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$config = [
+    'message_server' => [
+        'host' => '127.0.0.1',
+        'port' => 11130,
+    ],
+    'tubes' => [
+        'Example1' => ['worker_num' => 5, 'class' => 'Footstones\\Plumber\\Example\\Example1Worker'],
+        'Example2' => ['worker_num' => 3, 'class' => 'Footstones\\Plumber\\Example\\Example2Worker']
+    ],
+];
+
+
+if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart', 'status')) ) {
+    echo "Please input: bin/plumber start|stop|restart|status\n";
+    exit();
+}
+
+$daemon = new WorkerDaemon($config);
+
+$daemon->main($argv[1]);

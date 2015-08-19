@@ -1,0 +1,5 @@
+/composer.lock
+/composer.phar
+/var/logs/*
+/var/run/*
+
