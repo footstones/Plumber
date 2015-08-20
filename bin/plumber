@@ -7,7 +7,7 @@ if (!$autoloader()) {
     die('class autoloader not found.');
 }
 
-use Footstones\Plumber\WorkerDaemon;
+use Footstones\Plumber\Plumber;
 
 $config = include $argv[2];
 
@@ -20,6 +20,6 @@ if (empty($argv[1]) || !in_array($argv[1], array('start', 'stop', 'restart', 'st
     exit();
 }
 
-$daemon = new WorkerDaemon($config);
+$daemon = new Plumber($config);
 
 $daemon->main($argv[1]);
