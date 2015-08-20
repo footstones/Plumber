@@ -2,14 +2,18 @@
 
 namespace Footstones\Plumber\Example;
 
-use Footstones\Plumber\WorkerInterface;
+use Footstones\Plumber\IWorker;
 
-class Example1Worker implements WorkerInterface
+class Example1Worker implements IWorker
 {
 
     public function execute($data)
     {
         echo "example 1";
+
+        sleep(1);
+
+        return array('code' => IWorker::RETRY);
     }
 
 }

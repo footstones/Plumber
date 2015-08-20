@@ -11,11 +11,15 @@ $beanstalk = new BeanstalkClient();
 
 $beanstalk->connect();
 $beanstalk->useTube('Example1');
-$beanstalk->put(
+$result = $beanstalk->put(
     0, // Give the job a priority of 23.
     0,  // Do not wait to put job into the ready queue.
     60, // Give the job 1 minute to run.
-    $message // The job's body.
+    $message // The job's .body
 );
+
+// $deleted = $beanstalk->delete(236);
+
+// var_dump($deleted);
 
 $beanstalk->disconnect();
