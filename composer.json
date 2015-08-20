@@ -1,5 +1,5 @@
 {
-    "name": "Footstones/Plumber",
+    "name": "footstones/plumber",
     "type": "library",
     "description": "A PHP Message Queue Worker.",
     "keywords": ["plumber", "beanstalk", "message queue", "swoole"],
