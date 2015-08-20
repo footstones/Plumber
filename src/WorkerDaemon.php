@@ -25,17 +25,22 @@ class WorkerDaemon
 
     protected function start()
     {
-        $socket = realpath(__DIR__ . '/../var/run/worker-daemon.sock');
-        $this->server = $server = new \swoole_server($socket, 0, SWOOLE_PROCESS, SWOOLE_UNIX_STREAM);
+        // var_dump($this->config);exit();
+        // if (!file_exists($this->config['socket_path'])) {
+        //     touch($this->config['socket_path']);
+        //     chmod($this->config['socket_path'], 0777);
+        //     $this->config['socket_path'] = realpath($this->config['socket_path']);
+        //     var_dump($this->config['socket_path']);
+        // }
+
+        $this->server = $server = new \swoole_server($this->config['socket_path'], 0, SWOOLE_PROCESS, SWOOLE_UNIX_STREAM);
+
 
         $server->set(array(
             'reactor_num' => 1,
             'worker_num' => 1,
-            'max_connection' => 100,
-            'max_request' => 5000,
-            'task_max_request' => 5000,
-            'daemonize' => 0,
-            // 'log_file' => __DIR__ . '/../var/logs/worker-daemon.log',
+            'daemonize' => $this->config['daemonize'],
+            // 'log_file' => $this->config['log_path'],
         ));
 
         $this->createTubeListeners($server);

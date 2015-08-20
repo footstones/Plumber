@@ -1,5 +1,5 @@
 /composer.lock
 /composer.phar
-/var/logs/*
-/var/run/*
-
+/example/tmp/*
+!/example/tmp/.gitkeep
+!/example/tmp/plumber.sock
