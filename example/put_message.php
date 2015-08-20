@@ -18,8 +18,4 @@ $result = $beanstalk->put(
     $message // The job's .body
 );
 
-// $deleted = $beanstalk->delete(236);
-
-// var_dump($deleted);
-
 $beanstalk->disconnect();

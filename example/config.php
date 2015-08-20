@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'bootstrap' => '',
+    'bootstrap' => __DIR__ . '/bootstrap.php',
     'message_server' => [
         'host' => '127.0.0.1',
         'port' => 11130,

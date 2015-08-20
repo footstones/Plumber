@@ -8,8 +8,8 @@
     "autoload": {
         "psr-4": { 
             "Footstones\\Plumber\\": "src/",
-            "Footstones\\Plumber\\Tests": "tests/",
-            "Footstones\\Plumber\\Example": "example/"
+            "Footstones\\Plumber\\Tests\\": "tests/",
+            "Footstones\\Plumber\\Example\\": "example/"
         }
     },
     "authors": [

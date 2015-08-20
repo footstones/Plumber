@@ -9,11 +9,8 @@ class Example1Worker implements IWorker
 
     public function execute($data)
     {
-        echo "example 1";
-
-        sleep(1);
-
-        return array('code' => IWorker::RETRY);
+        echo "I'm example 1 worker.\n";
+        return array('code' => IWorker::SUCCESS);
     }
 
 }
