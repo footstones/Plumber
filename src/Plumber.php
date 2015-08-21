@@ -130,14 +130,19 @@ class Plumber
 
             while(true) {
                 $this->logger->info("tube({$tubeName}, #{$process->id}): reserving.");
-                $job = $beanstalk->reserve();
+                $job = $beanstalk->reserve($this->config['reserve_timeout']);
+                if (!$job) {
+                    $this->logger->info("tube({$tubeName}, #{$process->id}): reserving timeout.");
+                    continue;
+                }
+
                 $job['body'] = json_decode($job['body'], true);
                 $this->logger->info("tube({$tubeName}, #{$process->id}): job #{$job['id']} reserved.");
 
                 try {
                     $result = $worker->execute($job);
                 } catch(\Exception $e) {
-                    $message = sprintf('tube({$tubeName}, #%d): job #%d failed, `%s` %s', $process->id, $job['id'], $e->getMessage());
+                    $message = sprintf('tube({$tubeName}, #%d): execute job #%d exception, `%s`', $process->id, $job['id'], $e->getMessage());
                     $this->logger->error($message, $job);
                     continue;
                 }
@@ -145,8 +150,8 @@ class Plumber
                 $code = is_array($result) ? $result['code'] : $result;
 
                 switch ($code) {
-                    case IWorker::SUCCESS:
-                        $this->logger->info("tube({$tubeName}, #{$process->id}): job #{$job['id']} execute succeed.");
+                    case IWorker::FINISH:
+                        $this->logger->info("tube({$tubeName}, #{$process->id}): job #{$job['id']} execute finished.");
 
                         $deleted = $beanstalk->delete($job['id']);
                         if (!$deleted) {
@@ -161,17 +166,46 @@ class Plumber
                         } else {
                             $message['retry'] = $message['retry'] + 1;
                         }
+                        $stats = $beanstalk->statsJob($job['id']);
+                        if ($stats === false) {
+                            $this->logger->error("tube({$tubeName}, #{$process->id}): job #{$job['id']} get stats failed, in retry executed.", $job);
+                            break;
+                        }
+
                         $this->logger->info("tube({$tubeName}, #{$process->id}): job #{$job['id']} retry {$message['retry']} times.");
+                        $deleted = $beanstalk->delete($job['id']);
+                        if (!$deleted) {
+                            $this->logger->error("tube({$tubeName}, #{$process->id}): job #{$job['id']} delete failed, in retry executed.", $job);
+                            break;
+                        }
 
-                        $jobStat = $beanstalk->statsJob($job['id']);
+                        $pri = isset($result['pri']) ? $result['pri'] : $stats['pri'];
+                        $delay = isset($result['delay']) ? $result['delay'] : $stats['delay'];
+                        $ttr = isset($result['ttr']) ? $result['ttr'] : $stats['ttr'];
 
-                        $beanstalk->delete($job['id']);
-                        $beanstalk->put(0, 0, 60, json_encode($message));
+                        $puted = $beanstalk->put($pri, $delay, $ttr, json_encode($message));
+                        if (!$puted) {
+                            $this->logger->error("tube({$tubeName}, #{$process->id}): job #{$job['id']} reput failed, in retry executed.", $job);
+                            break;
+                        }
+
+                        $this->logger->info("tube({$tubeName}, #{$process->id}): job #{$job['id']} reputed, new job id is #{$puted}");
                         break;
                     case IWorker::BURY:
-                        $this->logger->info("tube({$tubeName}, #{$process->id}): bury job #{$job['id']}");
-                        $pri = empty($result['pri']) ? 0 : intval($result['pri']);
-                        $beanstalk->bury($job['id'], $pri);
+                        $stats = $beanstalk->statsJob($job['id']);
+                        if ($stats === false) {
+                            $this->logger->error("tube({$tubeName}, #{$process->id}): job #{$job['id']} get stats failed, in bury executed.", $job);
+                            break;
+                        }
+
+                        $pri = isset($result['pri']) ? $result['pri'] : $stats['pri'];
+                        $burried = $beanstalk->bury($job['id'], $pri);
+                        if ($burried === false) {
+                            $this->logger->error("tube({$tubeName}, #{$process->id}): job #{$job['id']} bury failed", $job);
+                            break;
+                        }
+
+                        $this->logger->info("tube({$tubeName}, #{$process->id}): job #{$job['id']} buried.");
                         break;
                     default:
                         break;

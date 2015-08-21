@@ -3,6 +3,7 @@
 namespace Footstones\Plumber;
 
 use Psr\Log\LoggerInterface;
+use swoole_async_write;
 
 class Logger implements LoggerInterface
 {
