@@ -10,7 +10,9 @@ class BeanstalkClient extends Client
 
     public function getLatestError()
     {
-        return $this->_latestError;
+        $error = $this->_latestError;
+        $this->_latestError = null;
+        return $error;
     }
 
     protected function _error($message)
