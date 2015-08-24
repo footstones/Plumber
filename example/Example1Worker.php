@@ -10,7 +10,7 @@ class Example1Worker implements IWorker
     public function execute($data)
     {
         echo "I'm example 1 worker.\n";
-        sleep(100);
+        // sleep(100);
         return array('code' => IWorker::FINISH);
     }
 

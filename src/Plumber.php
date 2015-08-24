@@ -119,16 +119,7 @@ class Plumber
     public function onShutdown($serv)
     {
         $this->logger->info('showdown.');
-
-        $statses = $this->stats->getAll();
-
-        foreach ($statses as $pid => $s) {
-            if (swoole_process::kill($pid, 0)) {
-                swoole_process::kill($pid, SIGTERM);
-            }
-        }
-
-        swoole_process::kill($this->monitor->pid, SIGTERM);
+        $this->stats->stop();
     }
 
     private function registerMonitorProcess()
@@ -137,26 +128,24 @@ class Plumber
         $stats = $this->createListenerStats();
         $this->stats = $stats;
 
-        
         $monitor = new \swoole_process(function($process) use ($stats) {
             $process->name("plumber: monitor");
             $this->createTubeListeners($stats);
-            $queue = new BeanstalkClient();
 
             while(true) {
                 // 回收已结束的进程
                 while(1) {
                     $ret = swoole_process::wait(false);
                     if ($ret) {
-                        $this->logger->info("process #{$ret['pid']} exiteddd.", $ret);
-                        $st = $this->stats->get($ret['pid']);
-                        if ($st && !empty($st['job_id'])) {
-                            $queue->connect();
-                            $queue->useTube($ret['tube']);
-                            $jobStat = $queue->statsJob($ret['job_id']);
-                            $released = $queue->release($st['job_id'], $jobStat['pri'], $jobStat['delay']);
-                            $this->logger->info("release job #{$ret['job_id']}, {$released}.");
+                        $this->logger->info("process #{$ret['pid']} exited.", $ret);
+                        $this->stats->remove($ret['pid']);
+ 
+                        $all = $this->stats->getAll();
+                        if (empty($all)) {
+                            $this->logger->info("monitor #{$process->pid} exited.");
+                            $process->exit(1);
                         }
+
                     } else {
                         break;
                     }
@@ -189,7 +178,7 @@ class Plumber
         foreach ($this->config['tubes'] as $tubeName => $tubeConfig) {
             $size += $tubeConfig['worker_num'];
         }
-        return new ListenerStats($size);
+        return new ListenerStats($size, $this->logger);
     }
 
     /**
@@ -223,8 +212,6 @@ class Plumber
             $listener->connect();
 
             $beanstalk = $listener->getQueue();
-
-            // sleep(10);
 
             $listener->loop();
 

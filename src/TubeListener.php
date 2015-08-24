@@ -67,6 +67,14 @@ class TubeListener
         $worker = $this->createQueueWorker($tubeName);
 
         while(true) {
+            $this->stats->touch($tubeName, $process->pid, false, 0);
+            $stoping = $this->stats->isStoping();
+
+            if ($stoping) {
+                $process->exit(1);
+                break;
+            }
+
             $job = $this->reserveJob();
             if (empty($job)) {
                 continue;
@@ -112,6 +120,7 @@ class TubeListener
         $logger->info("tube({$tubeName}, #{$process->pid}): reserving.");
 
         $job = $queue->reserve($this->config['reserve_timeout']);
+
 
         $this->stats->touch($tubeName, $process->pid, true, empty($job['id']) ? 0 : $job['id']);
 

@@ -12,11 +12,12 @@ class ListenerStats
 
     private $pids;
 
-    public function __construct($size)
+    public function __construct($size, $logger = null)
     {
         $table = new swoole_table($this->calTableSize($size));
         $table->column('count', swoole_table::TYPE_INT);
         $table->column('last_update', swoole_table::TYPE_INT);
+        $table->column('tube', swoole_table::TYPE_STRING, 128);
         $table->column('job_id', swoole_table::TYPE_INT);
         $table->column('timeout', swoole_table::TYPE_INT);
         $table->create();
@@ -26,6 +27,14 @@ class ListenerStats
         $pids->column('pids', swoole_table::TYPE_STRING, $size*10);
         $pids->create();
         $this->pids = $pids;
+
+        $stoping = new swoole_table(1);
+        $stoping->column('status', swoole_table::TYPE_INT);
+        $stoping->create();
+        $this->stoping = $stoping;
+
+        $this->logger = $logger;
+
     }
 
     /**
@@ -73,7 +82,26 @@ class ListenerStats
             return array('count' => 0, 'last_update' => 0, 'tube' => '', 'job_id' => 0, 'timeout' => 0);
         }
         return $stats;
+    }
 
+    public function remove($pid)
+    {
+        $pids = $this->pids->get('data') ? : array('pids' => '');
+        $pids = trim($pids['pids']);
+        $pids = empty($pids) ? array() : explode(' ', $pids);
+
+        $newPids = array();
+        foreach ($pids as $p) {
+            if ($p == $pid) {
+                continue;
+            }
+            $newPids[] = $p;
+        }
+
+        $newPids = implode(' ', $newPids);
+        $this->pids->set('data', array('pids' => $newPids));
+        // $this->table->del($this->getKey($pid));
+        return ;
     }
 
     public function getAll()
@@ -87,6 +115,17 @@ class ListenerStats
             $statses[$pid] = $this->get($pid);
         }
         return $statses;
+    }
+
+    public function stop()
+    {
+        $this->stoping->set('data', array('status' => 1));
+    }
+
+    public function isStoping()
+    {
+        $stoping = $this->stoping->get('data') ? : array('status' => 0);
+        return $stoping['status'] ? true : false;
     }
 
     private function getKey($pid)
