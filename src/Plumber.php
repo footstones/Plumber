@@ -41,6 +41,12 @@ class Plumber
 
     protected function start()
     {
+         if ($this->pidManager->get()) {
+            echo "ERROR: plumber is already running.\n";
+            return;
+         }
+
+
         echo "plumber started.\n";
 
         if ($this->config['daemonize']) {
@@ -49,6 +55,9 @@ class Plumber
 
         $this->logger = new Logger(['log_path' => $this->config['log_path']]);
         $this->output = new Logger(['log_path' => $this->config['output_path']]);
+
+        $this->logger->info('plumber starting...');
+        
         $this->stats = $stats = $this->createListenerStats();
 
         swoole_set_process_name('plumber: master');

@@ -16,6 +16,8 @@ class TubeListener
 
     protected $stats;
 
+    protected $times = 0;
+
     public function __construct($tubeName, $process, $config, $logger, $stats)
     {
         $this->tubeName = $tubeName;
@@ -118,10 +120,11 @@ class TubeListener
         $logger = $this->logger;
         $process = $this->process;
 
-        $logger->info("tube({$tubeName}, #{$process->pid}): reserving.");
-
+        if ($this->times % 10 === 0) {
+            $logger->info("tube({$tubeName}, #{$process->pid}): reserving {$this->times} times.");
+        }
         $job = $queue->reserve($this->config['reserve_timeout']);
-
+        $this->times ++;
 
         $this->stats->touch($tubeName, $process->pid, true, empty($job['id']) ? 0 : $job['id']);
 

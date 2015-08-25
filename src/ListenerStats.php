@@ -44,7 +44,6 @@ class ListenerStats
     {
         $key = $this->getKey($pid);
 
-        $this->table->lock();
         $stats = $this->table->get($key);
         if ($stats === false) {
             $this->table->set($key, array(
@@ -66,7 +65,6 @@ class ListenerStats
                 'timeout' => 0,
             ));
         }
-        $this->table->unlock();
     }
 
     public function timeout($pid)
