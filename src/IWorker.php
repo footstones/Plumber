@@ -2,6 +2,8 @@
 
 namespace Footstones\Plumber;
 
+use Psr\Log\LoggerInterface;
+
 interface IWorker
 {
     /**
@@ -26,4 +28,6 @@ interface IWorker
     const BURRY = 'burry';
 
     public function execute($data);
+
+    public function setLogger(LoggerInterface $logger);
 }

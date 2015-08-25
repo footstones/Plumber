@@ -3,6 +3,7 @@
 namespace Footstones\Plumber\Example;
 
 use Footstones\Plumber\IWorker;
+use Psr\Log\LoggerInterface;
 
 class Example1Worker implements IWorker
 {
@@ -12,6 +13,11 @@ class Example1Worker implements IWorker
         echo "I'm example 1 worker.\n";
         // sleep(100);
         return array('code' => IWorker::FINISH);
+    }
+
+    public function setLogger(LoggerInterface $logger)
+    {
+
     }
 
 }

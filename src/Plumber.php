@@ -26,6 +26,8 @@ class Plumber
 
     protected $workers;
 
+    protected $state;
+
     public function __construct($config)
     {
         $this->config = $config;
@@ -39,21 +41,23 @@ class Plumber
 
     protected function start()
     {
+        echo "plumber started.\n";
+
+        if ($this->config['daemonize']) {
+            swoole_process::daemon();
+        }
 
         $this->logger = new Logger(['log_path' => $this->config['log_path']]);
         $this->output = new Logger(['log_path' => $this->config['output_path']]);
         $this->stats = $stats = $this->createListenerStats();
 
-        // swoole_process::daemon();
         swoole_set_process_name('plumber: master');
         $this->workers = $this->createWorkers($stats);
         $this->registerSignal();
 
-
         $this->pidManager->save(posix_getpid());
 
         swoole_timer_tick(1000, function($timerId) {
-            $this->logger->info('timeout checking...');
             $statses = $this->stats->getAll();
             foreach ($statses as $pid => $s) {
                 if ( ($s['last_update'] + $this->config['reserve_timeout'] + $this->config['execute_timeout']) > time()) {
@@ -64,21 +68,35 @@ class Plumber
                     $this->stats->timeout($pid);
                 }
             }
-
         });
 
     }
 
     protected function stop()
     {
-        echo "stoping....";
         $pid = $this->pidManager->get();
+        if (empty($pid)) {
+            echo "plumber is not running...\n";
+            return ;
+        }
+
+        echo "plumber is stoping....";
         exec("kill -15 {$pid}");
+        while(1) {
+            if ($this->pidManager->get()) {
+                sleep(1);
+                continue;
+            }
+
+            echo "[OK]\n";
+            break;
+        }
     }
 
     protected function restart()
     {
         $this->stop();
+        sleep(1);
         $this->start();
     }
 
@@ -129,7 +147,6 @@ class Plumber
             $beanstalk = $listener->getQueue();
 
             $listener->loop();
-
         };
     }
 
@@ -147,18 +164,28 @@ class Plumber
             }
         });
 
-        swoole_process::signal(SIGTERM, function($signo) {
-             $this->logger->info("plumber is stoping....");
-             $this->stats->stop();
+        $softkill = function($signo) {
+            if ($this->state == 'stoping') {
+                return ;
+            }
+            $this->state = 'stoping';
+            $this->logger->info("plumber is stoping....");
 
-             // 确保worker进程都退出后，再退出主进程
-             swoole_timer_tick(1000, function($timerId) {
-                if (empty($this->workers)) {
-                    swoole_timer_clear($timerId);
-                    $this->logger->info('plumber is stopped.');
-                    exit();
+            $this->stats->stop();
+
+            // 确保worker进程都退出后，再退出主进程
+            swoole_timer_tick(1000, function($timerId) {
+                if (!empty($this->workers)) {
+                    return ;
                 }
-             });
-        });
+                swoole_timer_clear($timerId);
+                $this->pidManager->clear();
+                $this->logger->info('plumber is stopped.');
+                exit();
+            });
+        };
+
+        swoole_process::signal(SIGTERM, $softkill);
+        swoole_process::signal(SIGINT, $softkill);
     }
 }

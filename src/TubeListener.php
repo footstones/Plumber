@@ -30,7 +30,7 @@ class TubeListener
         $tubeName = $this->tubeName;
         $process = $this->process;
         $logger = $this->logger;
-        $queue = $this->queue = new BeanstalkClient();
+        $queue = $this->queue = new BeanstalkClient($this->config['message_server']);
 
         $connected = $queue->connect();
         if (!$connected) {
@@ -133,7 +133,6 @@ class TubeListener
                     $logger->notice("tube({$tubeName}, #{$process->pid}): reserved DEADLINE_SOON.");
                     break;
                 case 'TIMED_OUT':
-                    $logger->info("tube({$tubeName}, #{$process->pid}): reserved TIMED_OUT.");
                     break;
                 default:
                     $retry = 3;
@@ -164,10 +163,9 @@ class TubeListener
         }
 
         $job['body'] = json_decode($job['body'], true);
-        $logger->info("tube({$tubeName}, #{$process->pid}): job #{$job['id']} reserved.");
+        $logger->info("tube({$tubeName}, #{$process->pid}): job #{$job['id']} reserved.", $job);
 
         return $job;
-
     }
 
     private function finishJob($job)
@@ -254,6 +252,7 @@ class TubeListener
     {
         $class = $this->config['tubes'][$name]['class'];
         $worker = new $class();
+        $worker->setLogger($this->logger);
         return $worker;
     }
 
