@@ -7,8 +7,8 @@ return [
         'port' => 11130,
     ],
     'tubes' => [
-        'Example1' => ['worker_num' => 10, 'class' => 'Footstones\\Plumber\\Example\\Example1Worker'],
-        'Example2' => ['worker_num' => 10, 'class' => 'Footstones\\Plumber\\Example\\Example2Worker']
+        'Example1' => ['worker_num' => 1, 'class' => 'Footstones\\Plumber\\Example\\Example1Worker'],
+        'Example2' => ['worker_num' => 1, 'class' => 'Footstones\\Plumber\\Example\\Example2Worker']
     ],
     'log_path' => '/tmp/plumber.log',
     'output_path' => '/tmp/plumber.output.log',

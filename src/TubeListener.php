@@ -71,6 +71,7 @@ class TubeListener
             $stoping = $this->stats->isStoping();
 
             if ($stoping) {
+                $this->logger->info("process #{$process->pid} is exiting.");
                 $process->exit(1);
                 break;
             }

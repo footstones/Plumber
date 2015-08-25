@@ -11,31 +11,26 @@ class PidManager
         $this->path = $path;
     }
 
-    public function get($name)
+    public function get()
     {
-        if (!file_exists($this->getFullPath($name))) {
+        if (!file_exists($this->path)) {
             return 0;
         }
-        return intval(file_get_contents($this->getFullPath($name)));
+        return intval(file_get_contents($this->path));
     }
 
-    public function save($name, $pid)
+    public function save($pid)
     {
         $pid = intval($pid);
-        file_put_contents($this->getFullPath($name), $pid);
+        file_put_contents($this->path, $pid);
     }
 
-    public function clear($name)
+    public function clear()
     {
-        if (!file_exists($this->getFullPath($name))) {
+        if (!file_exists($this->path)) {
             return;
         }
 
-        unlink($this->getFullPath($name));
-    }
-
-    protected function getFullPath($name)
-    {
-        return $this->path . '.' . $name;
+        unlink($this->path);
     }
 }
