@@ -10,6 +10,7 @@ class ForwardWorker implements IWorker
 	protected $logger;
 	protected $config;
 	protected $tubeName;
+	protected $delays = array(2,4,8);
 
 	public function __construct($tubeName, $config) {
 		$this->config = $config;
@@ -28,9 +29,9 @@ class ForwardWorker implements IWorker
 
 			$this->logger->info("use tube host:{$this->config['destination']['host']} port:{$this->config['destination']['port']} tube:{$tubeName} ");
 
-			$pri = isset($this->config['pri']) ? $this->config['pri']:0;
-			$delay = isset($this->config['delay']) ? $this->config['delay']:0;
-			$ttr = isset($this->config['ttr']) ? $this->config['ttr']:0;
+			$pri = isset($this->config['pri']) ? $this->config['pri']: 0;
+			$delay = isset($this->config['delay']) ? $this->config['delay']: 0;
+			$ttr = isset($this->config['ttr']) ? $this->config['ttr']: 60;
 			
 			$queue->put($pri, $delay, $ttr, json_encode($body));
 			$queue->disconnect();
@@ -39,7 +40,15 @@ class ForwardWorker implements IWorker
 
 			return IWorker::FINISH;
 		} catch (\Exception $e) {
-			$logger->error("job #{$job['id']} forwarded error, job is burried.", $job);
+			$body = $job['body'];
+			if (!isset($body['retry'])) {
+	            $body['retry'] = 0;
+	        }
+			if($body['retry'] < 3){
+				$logger->error("job #{$job['id']} forwarded error, job is retry {$body['retry']} times.  error message: {$e->getMessage()}", $job);
+				return array('code' => IWorker::RETRY, 'delay'=>$delays[$body['retry']]);
+			}
+			$logger->error("job #{$job['id']} forwarded error, job is burried.  error message: {$e->getMessage()}", $job);
 			return IWorker::BURRY;
 		}
 	}
