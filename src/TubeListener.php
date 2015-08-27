@@ -254,7 +254,7 @@ class TubeListener
     private function createQueueWorker($name)
     {
         $class = $this->config['tubes'][$name]['class'];
-        $worker = new $class();
+        $worker = new $class($name, $this->config['tubes'][$name]);
         $worker->setLogger($this->logger);
         return $worker;
     }
