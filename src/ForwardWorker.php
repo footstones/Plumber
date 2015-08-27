@@ -23,15 +23,19 @@ class ForwardWorker implements IWorker
 			$queue = new BeanstalkClient($this->config['destination']);
 			$queue->connect();
 
-			$tubeName = isset($this->config['tubeName']) ? $this->config['tubeName'] : $this->tubeName;
+			$tubeName = isset($this->config['destination']['tubeName']) ? $this->config['destination']['tubeName'] : $this->tubeName;
 			$queue->useTube($tubeName);
 
-			$pri = isset($config['pri']) ? $config['pri']:0;
-			$delay = isset($config['delay']) ? $config['delay']:0;
-			$ttr = isset($config['ttr']) ? $config['ttr']:0;
+			$this->logger->info("use tube host:{$this->config['destination']['host']} port:{$this->config['destination']['port']} tube:{$tubeName} ");
+
+			$pri = isset($this->config['pri']) ? $this->config['pri']:0;
+			$delay = isset($this->config['delay']) ? $this->config['delay']:0;
+			$ttr = isset($this->config['ttr']) ? $this->config['ttr']:0;
 			
-			$queue->put($pri, $delay, $ttr, json_encode($data['body']));
+			$queue->put($pri, $delay, $ttr, json_encode($body));
 			$queue->disconnect();
+			
+			$this->logger->info("put job to host:{$this->config['destination']['host']} port:{$this->config['destination']['port']} tube:{$tubeName} ", $body);
 
 			return IWorker::FINISH;
 		} catch (\Exception $e) {

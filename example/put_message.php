@@ -10,11 +10,11 @@ require_once __DIR__.'/../vendor/autoload.php';
 $beanstalk = new BeanstalkClient();
 
 $beanstalk->connect();
-$beanstalk->useTube('Example1');
+$beanstalk->useTube('Example3');
 
 $i=0;
 
-// for ($i=0; $i<100000; $i++) {
+for ($i=0; $i<5; $i++) {
     $message = json_encode(array('name' => 'Hello ' . $i));
     $result = $beanstalk->put(
         500, // Give the job a priority of 23.
@@ -23,6 +23,6 @@ $i=0;
         $message // The job's .body
     );
     echo $message . "\n";
-// }
+}
 
 $beanstalk->disconnect();

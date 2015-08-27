@@ -8,13 +8,14 @@ return [
     ],
     'tubes' => [
         'Example1' => ['worker_num' => 10, 'class' => 'Footstones\\Plumber\\Example\\Example1Worker'],
-        'Example2' => ['worker_num' => 10, 'class' => 'Footstones\\Plumber\\Example\\Example2Worker']
+        'Example2' => ['worker_num' => 10, 'class' => 'Footstones\\Plumber\\Example\\Example2Worker'],
         'Example3' => [
             'worker_num' => 5,
             'class' => 'Footstones\Plumber\ForwardWorker',
             'destination' => [
-                'host' => '127.0.0.1',
+                'host' => 'localhost',
                 'port' => 11300,
+                'tubeName' => 'Example4',
             ]
         ],
     ],
