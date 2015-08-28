@@ -10,7 +10,7 @@ class ForwardWorker implements IWorker
 	protected $logger;
 	protected $config;
 	protected $tubeName;
-	protected $delays = array(2,4,8,16);
+	protected $delays = array(2,4,8);
 
 	public function __construct($tubeName, $config) {
 		$this->config = $config;
@@ -55,7 +55,7 @@ class ForwardWorker implements IWorker
 				return array('code' => IWorker::RETRY, 'delay'=>$this->delays[$retry]);
 			}
 			$this->logger->error("job #{$job['id']} forwarded error, job is burried.  error message: {$e->getMessage()}", $job);
-			return IWorker::BURRY;
+			return IWorker::BURY;
 		}
 	}
 

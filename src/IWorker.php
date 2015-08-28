@@ -25,7 +25,7 @@ interface IWorker
     /**
      * Worker执行返回码：搁置
      */    
-    const BURRY = 'burry';
+    const BURY = 'bury';
 
     public function execute($data);
 
