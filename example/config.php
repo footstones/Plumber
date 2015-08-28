@@ -14,7 +14,7 @@ return [
             'class' => 'Footstones\Plumber\ForwardWorker',
             'destination' => [
                 'host' => 'localhost',
-                'port' => 11300,
+                'port' => 11301,
                 'tubeName' => 'Example4',
             ]
         ],
