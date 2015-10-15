@@ -15,7 +15,7 @@ return [
             'destination' => [
                 'host' => 'localhost',
                 'port' => 11300,
-                'tubeName' => 'Example4',
+                'tubeName' => 'Example2',
             ]
         ],
     ],
