@@ -21,7 +21,10 @@ class ForwardWorker implements IWorker
 	{
 		try{
 			$body = $job['body'];
-			$queue = new BeanstalkClient($this->config['destination']);
+			$config = $this->config['destination'];
+			$config['persistent'] = false;
+
+			$queue = new BeanstalkClient($config);
 			$queue->connect();
 
 			$tubeName = isset($this->config['destination']['tubeName']) ? $this->config['destination']['tubeName'] : $this->tubeName;
