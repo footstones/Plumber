@@ -19,17 +19,17 @@ composer require footstones/plumber
 
 ### 启动
 ```
-vendor/bin/plumber start  /config-path # config-path为配置文件的路径
+vendor/bin/plumber start /config-path # config-path为配置文件的路径
 ``` 
 
 ### 重启
 ```
-vendor/bin/plumber restart  /config-path
+vendor/bin/plumber restart /config-path
 ``` 
 
 ### 停止
 ```
-vendor/bin/plumber stop  /config-path
+vendor/bin/plumber stop /config-path
 ``` 
 
 ### 配置说明
