@@ -39,7 +39,7 @@ class ForwardWorker implements IWorker
 
 			return IWorker::FINISH;
 		} catch (\Exception $e) {
-			$logger->error("job #{$job['id']} forwarded error, job is burried.", $job);
+			$this->logger->error("job #{$job['id']} forwarded error, job is burried.", $job);
 			return IWorker::BURRY;
 		}
 	}
