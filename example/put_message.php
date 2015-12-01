@@ -14,8 +14,8 @@ $beanstalk->useTube('Example3');
 
 $i=0;
 
-for ($i=0; $i<5; $i++) {
-    $message = json_encode(array('name' => 'Hello ' . $i));
+for ($i=0; $i<1; $i++) {
+    $message = json_encode(array('id'=>uniqid(md5(gethostname())), 'name' => 'Hello ' . $i));
     $result = $beanstalk->put(
         500, // Give the job a priority of 23.
         0,  // Do not wait to put job into the ready queue.

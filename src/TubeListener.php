@@ -96,13 +96,13 @@ class TubeListener
 
             switch ($code) {
                 case IWorker::FINISH:
-                    $this->finishJob($job);
+                    $this->finishJob($job, $result);
                     break;
                 case IWorker::RETRY:
-                    $this->retryJob($job);
+                    $this->retryJob($job, $result);
                     break;
-                case IWorker::BURRY:
-                    $this->burryJob($job);
+                case IWorker::BURY:
+                    $this->buryJob($job, $result);
                     break;
                 default:
                     break;
@@ -171,7 +171,7 @@ class TubeListener
         return $job;
     }
 
-    private function finishJob($job)
+    private function finishJob($job, $result)
     {
         $tubeName = $this->tubeName;
         $queue = $this->queue;
@@ -187,7 +187,7 @@ class TubeListener
 
     }
 
-    private function retryJob($job)
+    private function retryJob($job, $result)
     {
         $tubeName = $this->tubeName;
         $queue = $this->queue;
@@ -227,7 +227,7 @@ class TubeListener
 
     }
 
-    private function burryJob($job)
+    private function buryJob($job, $result)
     {
         $tubeName = $this->tubeName;
         $queue = $this->queue;
