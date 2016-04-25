@@ -203,14 +203,14 @@ class TubeListener
         $stats = $queue->statsJob($job['id']);
         if ($stats === false) {
             $logger->error("tube({$tubeName}, #{$process->pid}): job #{$job['id']} get stats failed, in retry executed.", $job);
-            break;
+            return;
         }
 
         $logger->info("tube({$tubeName}, #{$process->pid}): job #{$job['id']} retry {$message['retry']} times.");
         $deleted = $queue->delete($job['id']);
         if (!$deleted) {
             $logger->error("tube({$tubeName}, #{$process->pid}): job #{$job['id']} delete failed, in retry executed.", $job);
-            break;
+            return;
         }
 
         $pri = isset($result['pri']) ? $result['pri'] : $stats['pri'];
@@ -220,7 +220,7 @@ class TubeListener
         $puted = $queue->put($pri, $delay, $ttr, json_encode($message));
         if (!$puted) {
             $logger->error("tube({$tubeName}, #{$process->pid}): job #{$job['id']} reput failed, in retry executed.", $job);
-            break;
+            return;
         }
 
         $logger->info("tube({$tubeName}, #{$process->pid}): job #{$job['id']} reputed, new job id is #{$puted}");
@@ -237,14 +237,14 @@ class TubeListener
         $stats = $queue->statsJob($job['id']);
         if ($stats === false) {
             $logger->error("tube({$tubeName}, #{$process->pid}): job #{$job['id']} get stats failed, in bury executed.", $job);
-            break;
+            return;
         }
 
         $pri = isset($result['pri']) ? $result['pri'] : $stats['pri'];
         $burried = $queue->bury($job['id'], $pri);
         if ($burried === false) {
             $logger->error("tube({$tubeName}, #{$process->pid}): job #{$job['id']} bury failed", $job);
-            break;
+            return;
         }
 
         $logger->info("tube({$tubeName}, #{$process->pid}): job #{$job['id']} buried.");
