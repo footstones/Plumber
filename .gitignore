@@ -4,3 +4,4 @@
 !/example/tmp/.gitkeep
 !/example/tmp/plumber.sock
 .DS_Store
+/vendor
