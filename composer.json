@@ -24,11 +24,5 @@
         "davidpersson/beanstalk" : "2.0.0",
         "psr/log": "^1.0.0 || dev-master"
     },
-    "bin": ["bin/plumber"],
-    "repositories": {
-        "packagist": {
-            "type": "composer",
-            "url": "https://packagist.phpcomposer.com"
-        }
-    }
+    "bin": ["bin/plumber"]
 }
